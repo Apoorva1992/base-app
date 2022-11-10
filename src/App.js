@@ -1,25 +1,98 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useMemo, useState } from 'react';
+//import Counter from "./components/Counter";
+import {format} from 'date-fns'
+
 
 function App() {
+  // We hold the user's selected number in state.
+  const [selectedNum, setSelectedNum] = React.useState(100);
+  
+  const time = useTime();
+  // We calculate all of the prime numbers between 0 and the
+  // user's chosen number, `selectedNum`:
+  //const allPrimes = [];
+  // for (let counter = 2; counter < selectedNum; counter++) {
+  //   if (isPrime(counter)) {
+  //     allPrimes.push(counter);
+  //   }
+  // }
+
+  const allPrimes = useMemo(()=> {
+    const result = []
+    for (let counter = 2; counter < selectedNum; counter++) {
+      if (isPrime(counter)) {
+        result.push(counter);
+      }
+    }
+    return result
+
+  },[selectedNum])
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <p>
+        {format(time,"hh:mm:ss")}
+      </p>
+      <form>
+        <label htmlFor="num">Your number:</label>
+        <input
+          type="number"
+          value={selectedNum}
+          onChange={(event) => {
+            // To prevent computers from exploding,
+            // we'll max out at 100k
+            let num = Math.min(100_000, Number(event.target.value));
+            
+            setSelectedNum(num);
+          }}
+        />
+      </form>
+      <p>
+        There are {allPrimes.length} prime(s) between 1 and {selectedNum}:
+        {' '}
+        <span className="prime-list">
+          {allPrimes.join(', ')}
+        </span>
+      </p>
     </div>
+
+    // <div className="App">
+    //   <Counter />
+    //   <footer>This is footer</footer>
+    // </div>
   );
+}
+
+// Helper function that calculates whether a given
+// number is prime or not.
+function isPrime(n){
+  const max = Math.ceil(Math.sqrt(n));
+  
+  if (n === 2) {
+    return true;
+  }
+  
+  for (let counter = 2; counter <= max; counter++) {
+    if (n % counter === 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function useTime(){
+  const [time,setTime] = useState(new Date());
+
+  useEffect(()=> {
+    const intervalId = window.setInterval(()=> {
+      setTime(new Date())
+    },1000);
+    return()=> {
+      window.clearInterval(intervalId)
+    }
+   })
+   return time;
 }
 
 export default App;
